@@ -1,0 +1,12 @@
+# Virtual environments
+venv/
+env/
+
+# Python cache and compiled files
+__pycache__/
+*.pyc
+*.pyo
+
+# Environment variables and secrets
+.env
+.streamlit/secrets.toml
