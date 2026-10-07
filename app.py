@@ -95,17 +95,26 @@ if prompt := st.chat_input("Message Nemotron..."):
                 model="nvidia/nemotron-3-super-120b-a12b",
                 messages=api_messages,
                 temperature=0.2 if st.session_state.caveman_mode else 0.5,
-                max_tokens=1024,
-                stream=False
+                max_tokens=4096,
+                stream=True,
+                timeout=15.0 # Prevents the app from hanging silently
             )
             
-            for chunk in response:
-                if chunk.choices[0].delta.content is not None:
-                    full_response += chunk.choices[0].delta.content
-                    message_placeholder.markdown(full_response + "▌")
+            # Robust fallback: Handle both streamed and non-streamed responses safely
+            if hasattr(response, 'choices'):
+                full_response = response.choices[0].message.content
+                message_placeholder.markdown(full_response)
+            else:
+                for chunk in response:
+                    if hasattr(chunk, 'choices') and chunk.choices and chunk.choices[0].delta.content is not None:
+                        full_response += chunk.choices[0].delta.content
+                        message_placeholder.markdown(full_response + "▌")
+                
+                # Render the final text without the cursor
+                message_placeholder.markdown(full_response)
             
-            message_placeholder.markdown(full_response)
+            # Save the successful response to the session state
             st.session_state.messages.append({"role": "assistant", "content": full_response})
             
         except Exception as e:
-            st.error(f"Connection Error: {e}")
+            st.error(f"Connection Error: {e}. If this is a timeout, the model is temporarily offline on NVIDIA's cloud.")
