@@ -9,17 +9,12 @@ st.set_page_config(page_title="Nemotron Chat", page_icon="💬", layout="centere
 st.title("Nemotron AI Chat")
 st.caption("Powered by NVIDIA NIM Cloud Endpoints")
 
-with st.sidebar:
-    st.header("⚙️ Configuration")
-    api_key = st.text_input(
-        "NVIDIA API Key", 
-        type="password", 
-        value=os.getenv("NVIDIA_API_KEY", ""),
-        help="Get your free key from build.nvidia.com"
-    )
-    if not api_key:
-        st.warning("Please enter your NVIDIA API key to proceed.")
-        st.stop()
+# Fetch the API key silently from Streamlit Secrets / Environment
+api_key = os.getenv("NVIDIA_API_KEY")
+
+if not api_key:
+    st.error("API Key is missing from the server secrets.")
+    st.stop()
 
 client = OpenAI(
     base_url="https://integrate.api.nvidia.com/v1",
